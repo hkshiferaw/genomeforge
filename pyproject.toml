@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "genomeforge"
+version = "0.1.0"
+description = "Bioinformatics pipeline toolkit (learning project)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Henoke Shiferaw", email = "hkshiferaw@gmail.com"}
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
