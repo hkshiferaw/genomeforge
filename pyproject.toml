@@ -12,6 +12,8 @@ license = {text = "MIT"}
 authors = [
     {name = "Henoke Shiferaw", email = "hkshiferaw@gmail.com"}
 ]
+[project.scripts]
+genomeforge = "genomeforge.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
