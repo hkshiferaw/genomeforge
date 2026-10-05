@@ -5,9 +5,9 @@ A bioinformatics pipeline toolkit, built as a hands-on learning project.
 ## Status
 
 GenomeForge currently provides DNA validation, GC-fraction calculation,
-sequence records, configurable sequence rules, and a command-line interface.
-It is a learning project; FASTA parsing and complete analysis pipelines are
-not implemented yet.
+sequence records, configurable sequence rules, FASTA text parsing, and a
+command-line interface for GC calculation. It is a learning project; complete
+analysis pipelines are not implemented yet.
 
 ## Installation
 
@@ -58,6 +58,60 @@ Supply uppercase bases in the rule sets. In this example, N is accepted and
 included in the total sequence length, but is not counted as G or C. Default
 rules reject N. Custom rules are also accepted by `validate_dna_sequence()`;
 the record method and CLI use default rules.
+
+## FASTA text parsing
+
+Use `parse_fasta()` to turn FASTA text into a list of `SequenceRecord` objects
+in input order. Sequence lines are joined, empty lines are ignored, and each
+assembled sequence is validated before its record is returned.
+
+```python
+from genomeforge import parse_fasta
+
+text = ">seq1 Example sequence\nAGCT\nTGCA\n>seq2\nGGCC\n"
+records = parse_fasta(text)
+
+records[0].identifier   # "seq1"
+records[0].description  # "Example sequence"
+records[0].sequence     # "AGCTTGCA"
+records[1].sequence     # "GGCC"
+```
+
+The function accepts text, not a file path. Use headers such as
+`>identifier description`, with a space separating the optional description.
+By default, sequence characters must be A, C, G, or T (case-insensitive).
+Pass custom rules explicitly to allow additional bases:
+
+```python
+from genomeforge import SequenceRules, parse_fasta
+
+rules = SequenceRules(
+    valid_bases=frozenset("ACGTN"),
+    gc_bases=frozenset("GC"),
+)
+records = parse_fasta(">seq1\nACGN\n", rules=rules)
+```
+
+Custom rules apply during parsing; they are not stored on the resulting
+records. `SequenceRecord.gc_fraction()` still uses default rules. To calculate
+GC content with custom rules, use `gc_content(record.sequence, rules=rules)`.
+
+```python
+from genomeforge import gc_content
+
+gc_content(records[0].sequence, rules=rules)  # 0.5
+```
+
+The current parser expects newline-separated text and space-separated header
+descriptions. It skips empty lines but does not strip whitespace from sequence
+lines.
+
+Malformed structure, such as sequence data before a header, empty input, a
+a header containing only `>` and optional whitespace, or a record without
+sequence data, raises `FastaFormatError`.
+Disallowed sequence characters raise `InvalidSequenceError`. Both exceptions
+inherit from `ValueError`. The `genomeforge.fasta` logger emits the parsed
+record count at `DEBUG` level; the calling application configures logging.
 
 ## Command-line usage
 
